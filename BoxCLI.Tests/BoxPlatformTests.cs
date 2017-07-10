@@ -10,6 +10,8 @@ namespace BoxCLI.Tests
 {
     public class BoxPlatformTests
     {   
+        // GetBoxPlatformSettings not part of the project
+        /*
         [Fact]
         public void CanGet_BoxPlatformSettings_Manually()
         {
@@ -20,5 +22,6 @@ namespace BoxCLI.Tests
             Assert.Equal("/private_key.pem", options.JwtPrivateKeyFilePath);
             
         }
+        */
     }
 }

@@ -10,7 +10,8 @@ namespace BoxCLI.Tests
 {
     public class BoxCLICommandsTests
     {
-        
+        // GetBoxPlatformSettings not part of project
+        /*
         [Fact]
         public void IsNamed_Box()
         {
@@ -21,12 +22,15 @@ namespace BoxCLI.Tests
             Assert.Equal("/private_key.pem", options.JwtPrivateKeyFilePath);
             
         }
+        */
 
+        /*
         private CommandLineApplication GetBoxCLI()
         {
             var app = new CommandLineApplication();
             var user = new UserCommand();
             return app;
         }
+        */
     }
 }
