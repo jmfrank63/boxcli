@@ -1,0 +1,12 @@
+{
+  "boxAppSettings": {
+    "clientID": "123",
+    "clientSecret": "456",
+    "appAuth": {
+      "publicKeyID": "abc",
+      "privateKey": "longprivatekey",
+      "passphrase": "privatepassword"
+    }
+  },
+  "enterpriseID": "789"
+}

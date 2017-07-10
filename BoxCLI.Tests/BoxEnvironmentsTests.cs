@@ -26,7 +26,7 @@ namespace BoxCLI.Tests
         public void Can_VerifyBoxConfigFile_With_Valid_File()
         {
             var environment = BoxTestUtilities.GetEnvironmentMock();
-            Assert.True(environment.VerifyBoxConfigFile(@"..\..\..\..\..\BoxCLI.Tests\valid_config.json"));
+            Assert.True(environment.VerifyBoxConfigFile(@"..\..\..\..\..\BoxCLI.Tests\valid_configs.json"));
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace BoxCLI.Tests
         public void Fail_VerifyBoxConfigFile_With_Invalid_File()
         {
             var environment = BoxTestUtilities.GetEnvironmentMock();
-            Assert.False(environment.VerifyBoxConfigFile(@"..\..\..\..\..\BoxCLI.Tests\invalid_config.json"));
+            Assert.False(environment.VerifyBoxConfigFile(@"..\..\..\..\..\BoxCLI.Tests\invalid_configs.json"));
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace BoxCLI.Tests
         public void Can_TranslateConfigFileToEnvironment_With_Valid_File()
         {
             var environment = BoxTestUtilities.GetEnvironmentMock();
-            var config = environment.TranslateConfigFileToEnvironment(@"..\..\..\..\..\BoxCLI.Tests\valid_config.json");
+            var config = environment.TranslateConfigFileToEnvironment(@"..\..\..\..\..\BoxCLI.Tests\valid_configs.json");
             Assert.Equal("123",config.ClientId);
             Assert.Equal("456",config.ClientSecret);
             Assert.Equal("789",config.EnterpriseId);
@@ -66,7 +66,7 @@ namespace BoxCLI.Tests
         public void Fail_TranslateConfigFileToEnvironment_With_Invalid_File()
         {
             var environment = BoxTestUtilities.GetEnvironmentMock();
-            var config = environment.TranslateConfigFileToEnvironment(@"..\..\..\..\..\BoxCLI.Tests\invalid_config.json");
+            var config = environment.TranslateConfigFileToEnvironment(@"..\..\..\..\..\BoxCLI.Tests\invalid_configs.json");
             Assert.Equal("123",config.ClientId);
             Assert.Equal("456",config.ClientSecret);
             Assert.Equal("789",config.EnterpriseId);
@@ -76,6 +76,7 @@ namespace BoxCLI.Tests
         }
 
         [Fact]
+        // Double check with AM
         public void Fail_TranslateConfigFileToEnvironment_Without_File()
         {
             var environment = BoxTestUtilities.GetEnvironmentMock();
@@ -86,6 +87,13 @@ namespace BoxCLI.Tests
             Assert.Equal(null,config.JwtPublicKeyId);
             Assert.Equal(null,config.JwtPrivateKey);
             Assert.Equal(null,config.JwtPrivateKeyPassword);
+        }
+
+        [Fact]
+        public void Can_AddNewEnvironment_With_Valid_Environment()
+        {
+            var environment = BoxTestUtilities.GetBoxHomeConfigModelMock();
+            
         }
 
         // GetBoxPlatformSettings not part of the project
