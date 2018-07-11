@@ -1,5 +1,4 @@
 using System;
-using BoxCLI.UnitTests.TestUtilities;
 using Xunit;
 
 namespace BoxCLI.UnitTests
@@ -9,7 +8,7 @@ namespace BoxCLI.UnitTests
         [Fact]
         public void BaseDirectoryPath_GetsSet()
         {
-            var boxHome = BoxTestUtilities.GetBoxHome();
+            var boxHome = BoxTestUtilities.BoxTestUtilities.GetBoxHome();
             Assert.Equal(boxHome.GetBaseDirectoryPath(), Environment.GetEnvironmentVariable("HOME"));
             Environment.SetEnvironmentVariable("BOX_HOME", "/usr/local/bin");
             Assert.Equal(boxHome.GetBaseDirectoryPath(), "/usr/local/bin");
@@ -18,7 +17,7 @@ namespace BoxCLI.UnitTests
         [Fact]
         public void BoxHomeDirectoryPath_GetsSet()
         {
-            var boxHome = BoxTestUtilities.GetBoxHome();
+            var boxHome = BoxTestUtilities.BoxTestUtilities.GetBoxHome();
             Assert.Equal(boxHome.GetBoxHomeDirectoryPath(), $"{Environment.GetEnvironmentVariable("HOME")}/.box");
         }
     }

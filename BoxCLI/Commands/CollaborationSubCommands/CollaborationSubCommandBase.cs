@@ -19,7 +19,7 @@ namespace BoxCLI.Commands.CollaborationSubCommands
     {
         protected CommandOption _asUser;
         protected readonly BoxType _t;
-        protected readonly static List<string> _fields = _fields = new List<string>()
+        protected static readonly List<string> _fields = _fields = new List<string>()
         {
             "status",
             "accessible_by",
@@ -29,7 +29,8 @@ namespace BoxCLI.Commands.CollaborationSubCommands
             "created_at",
             "modified_at"
         };
-        public CollaborationSubCommandBase(IBoxPlatformServiceBuilder boxPlatformBuilder, IBoxHome home, LocalizedStringsResource names, BoxType t)
+
+        protected CollaborationSubCommandBase(IBoxPlatformServiceBuilder boxPlatformBuilder, IBoxHome home, LocalizedStringsResource names, BoxType t)
             : base(boxPlatformBuilder, home, names)
         {
             _t = t;

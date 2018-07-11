@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
+// using System.Collections.Generic;
 using System.IO;
 using BoxCLI.BoxHome.Models;
 using BoxCLI.BoxHome.BoxHomeFiles;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+// using Microsoft.Extensions.Logging;
+// using Microsoft.Extensions.Options;
 using BoxCLI.CommandUtilities;
 using BoxCLI.BoxPlatform.Cache;
 
@@ -21,6 +21,20 @@ namespace BoxCLI.BoxHome
         public readonly BoxPersistantCache BoxPersistantCache;
         public readonly BoxDefaultSettings BoxHomeDefaultSettings;
 
+        public BoxHomeDirectory(string boxHomeSettingsFileName)
+        {
+            var settings = new BoxHomeSettings();
+            BoxHomeDirectoryName = settings.BoxHomeDirectoryName;
+            BoxHomeEnvironmentVariable = settings.BoxHomeEnvironmentVariable;
+            BoxHomeSettingsFileName = boxHomeSettingsFileName;
+            CreateBoxHomeDirectory();
+
+            BoxEnvironments = new BoxEnvironments(settings.BoxHomeEnvironmentsFileName, this);
+            BoxPersistantCache = new BoxPersistantCache(settings.BoxHomeCacheFileName, this);
+            BoxHomeDefaultSettings = new BoxDefaultSettings(settings.BoxHomeSettingsFileName, this);
+
+        }
+
         public BoxHomeDirectory()
         {
             var settings = new BoxHomeSettings();
@@ -33,9 +47,11 @@ namespace BoxCLI.BoxHome
             BoxHomeDefaultSettings = new BoxDefaultSettings(settings.BoxHomeSettingsFileName, this);
 
         }
+
         public string GetBoxHomeDirectoryPath()
         {
-            return CreateBoxHomeDirectory();
+            var home = GetBaseDirectoryPath();
+            return Path.Combine(home, BoxHomeDirectoryName);
         }
         public void RemoveBoxHomeDirectory()
         {
@@ -53,7 +69,7 @@ namespace BoxCLI.BoxHome
         }
         public BoxCachedToken BustCache()
         {
-            return this.BoxPersistantCache.BustCache();
+            return BoxPersistantCache.BustCache();
         }
 
         public BoxDefaultSettings GetBoxHomeSettings()
@@ -83,18 +99,9 @@ namespace BoxCLI.BoxHome
         private string CreateBoxHomeDirectory()
         {
             var baseDirectoryPath = GetBaseDirectoryPath();
-            if (!CheckIfBoxHomeDirectoryExists())
-            {
-                var path = Path.Combine(baseDirectoryPath, BoxHomeDirectoryName);
-                var newDir = Directory.CreateDirectory(path);
-                return path;
-            }
-            else
-            {
-                var home = GetBaseDirectoryPath();
-                home = Path.Combine(home, BoxHomeDirectoryName);
-                return home;
-            }
+            var path = Path.Combine(baseDirectoryPath, BoxHomeDirectoryName);
+            Directory.CreateDirectory(path);
+            return path;
         }
 
         private bool CheckIfBoxHomeDirectoryExists()

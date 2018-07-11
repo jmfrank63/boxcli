@@ -348,6 +348,7 @@ namespace BoxCLI.Commands
                                                       fileInMemoryStream, client: boxClient, fileSize: fileSize, idOnly: idOnly);
 
                 BoxSessionParts sessionPartsForCommit = new BoxSessionParts() { Parts = boxSessionParts };
+                
                 if (!idOnly)
                 {
                     Reporter.WriteInformation("");
@@ -357,9 +358,12 @@ namespace BoxCLI.Commands
                 // var retryInterval = boxSessionParts.Count() * 100;
 
                 // Commit
+
                 if (!string.IsNullOrEmpty(fileId))
                 {
-                    return await boxClient.FilesManager.CommitFileVersionSessionAsync(commitUri, completeFileSha, sessionPartsForCommit);
+                    var commitResponse = await boxClient.FilesManager.CommitFileVersionSessionAsync(commitUri, completeFileSha, sessionPartsForCommit);
+                    Console.WriteLine(commitResponse.ToString());
+                    return commitResponse;
                 }
                 else
                 {
