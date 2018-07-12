@@ -15,25 +15,11 @@ namespace BoxCLI.BoxHome
         public readonly string BoxHomeDirectoryName;
         public readonly string BoxHomeEnvironmentVariable;
 
-        public readonly string BoxHomeSettingsFileName;
+        // public readonly string BoxHomeSettingsFileName;
 
         public readonly BoxEnvironments BoxEnvironments;
         public readonly BoxPersistantCache BoxPersistantCache;
         public readonly BoxDefaultSettings BoxHomeDefaultSettings;
-
-        public BoxHomeDirectory(string boxHomeSettingsFileName)
-        {
-            var settings = new BoxHomeSettings();
-            BoxHomeDirectoryName = settings.BoxHomeDirectoryName;
-            BoxHomeEnvironmentVariable = settings.BoxHomeEnvironmentVariable;
-            BoxHomeSettingsFileName = boxHomeSettingsFileName;
-            CreateBoxHomeDirectory();
-
-            BoxEnvironments = new BoxEnvironments(settings.BoxHomeEnvironmentsFileName, this);
-            BoxPersistantCache = new BoxPersistantCache(settings.BoxHomeCacheFileName, this);
-            BoxHomeDefaultSettings = new BoxDefaultSettings(settings.BoxHomeSettingsFileName, this);
-
-        }
 
         public BoxHomeDirectory()
         {
@@ -50,11 +36,13 @@ namespace BoxCLI.BoxHome
 
         public string GetBoxHomeDirectoryPath()
         {
+            if (!CheckIfBoxHomeDirectoryExists()) return string.Empty;
             var home = GetBaseDirectoryPath();
             return Path.Combine(home, BoxHomeDirectoryName);
         }
         public void RemoveBoxHomeDirectory()
         {
+            if (!CheckIfBoxHomeDirectoryExists()) return;
             var boxDir = GetBoxHomeDirectoryPath();
             Directory.Delete(boxDir, true);
         }
@@ -96,12 +84,11 @@ namespace BoxCLI.BoxHome
         }
 
 
-        private string CreateBoxHomeDirectory()
+        private void CreateBoxHomeDirectory()
         {
             var baseDirectoryPath = GetBaseDirectoryPath();
             var path = Path.Combine(baseDirectoryPath, BoxHomeDirectoryName);
             Directory.CreateDirectory(path);
-            return path;
         }
 
         private bool CheckIfBoxHomeDirectoryExists()

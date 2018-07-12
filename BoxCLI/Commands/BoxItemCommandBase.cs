@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Box.V2;
 using Box.V2.Models;
+using Box.V2.Utility;
 using BoxCLI.BoxHome;
 using BoxCLI.BoxPlatform.Service;
 using BoxCLI.CommandUtilities;
@@ -30,10 +31,13 @@ namespace BoxCLI.Commands
         protected CommandOption _asUser;
         private CommandLineApplication _app;
         protected const long MINIUMUM_CHUNKED_UPLOAD_FILE_SIZE = 50000000;
-        public BoxItemCommandBase(IBoxPlatformServiceBuilder boxPlatformBuilder, IBoxHome boxHome, LocalizedStringsResource names)
+
+        public BoxItemCommandBase(IBoxPlatformServiceBuilder boxPlatformBuilder, IBoxHome boxHome,
+            LocalizedStringsResource names)
             : base(boxPlatformBuilder, boxHome, names)
         {
         }
+
         public override void Configure(CommandLineApplication command)
         {
             _app = command;
@@ -51,26 +55,30 @@ namespace BoxCLI.Commands
         }
 
         protected BoxFileRequest ConfigureFileRequest(string fileId = "", string parentId = "",
-           string fileName = "", string description = "")
+            string fileName = "", string description = "")
         {
             var fileRequest = new BoxFileRequest();
             if (!string.IsNullOrEmpty(fileId))
             {
                 fileRequest.Id = fileId;
             }
+
             if (!string.IsNullOrEmpty(fileName))
             {
                 fileRequest.Name = fileName;
             }
+
             if (!string.IsNullOrEmpty(description))
             {
                 fileRequest.Description = description;
             }
+
             if (!string.IsNullOrEmpty(parentId))
             {
                 fileRequest.Parent = new BoxItemRequest();
                 fileRequest.Parent.Id = parentId;
             }
+
             return fileRequest;
         }
 
@@ -93,6 +101,7 @@ namespace BoxCLI.Commands
             Reporter.WriteInformation($"File Name: {file.Name}");
             Reporter.WriteInformation($"File Size: {file.Size}");
         }
+
         protected void PrintFolder(BoxFolder folder, bool json)
         {
             if (json)
@@ -115,6 +124,7 @@ namespace BoxCLI.Commands
                 Reporter.WriteInformation($"Folder Upload Email Access: {folder.FolderUploadEmail.Acesss}");
                 Reporter.WriteInformation($"Folder Upload Email Address: {folder.FolderUploadEmail.Address}");
             }
+
             if (folder.Parent != null)
             {
                 Reporter.WriteInformation($"Folder Parent:");
@@ -153,7 +163,7 @@ namespace BoxCLI.Commands
                 using (var fs = File.OpenText(path))
                 {
                     var serializer = new JsonSerializer();
-                    return (List<T>)serializer.Deserialize(fs, typeof(List<T>));
+                    return (List<T>) serializer.Deserialize(fs, typeof(List<T>));
                 }
             }
             else if (fileFormat == base._settings.FILE_FORMAT_CSV)
@@ -174,7 +184,8 @@ namespace BoxCLI.Commands
         protected async Task<BoxFile> UploadFile(string path, string parentId = "", string fileName = "",
             string fileId = "", bool isNewVersion = false, bool idOnly = false)
         {
-            var boxClient = base.ConfigureBoxClient(oneCallAsUserId: this._asUser.Value(), oneCallWithToken: base._oneUseToken.Value());
+            var boxClient = base.ConfigureBoxClient(oneCallAsUserId: this._asUser.Value(),
+                oneCallWithToken: base._oneUseToken.Value());
             path = GeneralUtilities.TranslatePath(path);
 
             var file = new FileInfo(path);
@@ -182,6 +193,7 @@ namespace BoxCLI.Commands
             {
                 fileName = file.Name;
             }
+
             if (string.IsNullOrEmpty(parentId))
             {
                 parentId = "0";
@@ -189,7 +201,8 @@ namespace BoxCLI.Commands
 
             if (file.Length >= MINIUMUM_CHUNKED_UPLOAD_FILE_SIZE && isNewVersion)
             {
-                return await this.ChunkedUpload(path, fileName, parentId, file.Length, boxClient, fileId, true, idOnly: idOnly);
+                return await this.ChunkedUpload(path, fileName, parentId, file.Length, boxClient, fileId, true,
+                    idOnly: idOnly);
             }
             else if (file.Length >= MINIUMUM_CHUNKED_UPLOAD_FILE_SIZE)
             {
@@ -206,6 +219,7 @@ namespace BoxCLI.Commands
                         {
                             throw new Exception("A file ID is required for this command.");
                         }
+
                         var preflightCheckRequest = new BoxPreflightCheckRequest()
                         {
                             Name = fileName,
@@ -215,13 +229,15 @@ namespace BoxCLI.Commands
                                 Id = parentId
                             }
                         };
-                        var preflight = await boxClient.FilesManager.PreflightCheckNewVersion(fileId, preflightCheckRequest);
+                        var preflight =
+                            await boxClient.FilesManager.PreflightCheckNewVersion(fileId, preflightCheckRequest);
                         if (preflight.Success)
                         {
                             using (var sha1 = SHA1.Create())
                             {
                                 var checksum = sha1.ComputeHash(fileStream);
-                                return await boxClient.FilesManager.UploadNewVersionAsync(fileName, fileId, fileStream, uploadUri: preflight.UploadUri, contentMD5: checksum);
+                                return await boxClient.FilesManager.UploadNewVersionAsync(fileName, fileId, fileStream,
+                                    uploadUri: preflight.UploadUri, contentMD5: checksum);
                             }
                         }
                         else
@@ -246,7 +262,8 @@ namespace BoxCLI.Commands
                             using (var sha1 = SHA1.Create())
                             {
                                 var checksum = sha1.ComputeHash(fileStream);
-                                return await boxClient.FilesManager.UploadAsync(fileRequest, fileStream, uploadUri: preflight.UploadUri, contentMD5: checksum);
+                                return await boxClient.FilesManager.UploadAsync(fileRequest, fileStream,
+                                    uploadUri: preflight.UploadUri, contentMD5: checksum);
                             }
                         }
                         else
@@ -258,7 +275,8 @@ namespace BoxCLI.Commands
             }
         }
 
-        protected async Task ProcessFileUploadsFromFile(string path, string asUser = "", bool isNewVersion = false, bool json = false)
+        protected async Task ProcessFileUploadsFromFile(string path, string asUser = "", bool isNewVersion = false,
+            bool json = false)
         {
             try
             {
@@ -270,7 +288,8 @@ namespace BoxCLI.Commands
                     {
                         try
                         {
-                            var uploadedFile = await this.UploadFile(path: fileRequest.Path, parentId: fileRequest.Parent.Id, fileName: fileRequest.Name);
+                            var uploadedFile = await this.UploadFile(path: fileRequest.Path,
+                                parentId: fileRequest.Parent.Id, fileName: fileRequest.Name);
                             this.PrintFile(uploadedFile, json);
                         }
                         catch (Exception e)
@@ -285,7 +304,8 @@ namespace BoxCLI.Commands
                     {
                         try
                         {
-                            var uploadedFile = await this.UploadFile(path: fileRequest.Path, fileId: fileRequest.Id, fileName: fileRequest.Name, isNewVersion: true);
+                            var uploadedFile = await this.UploadFile(path: fileRequest.Path, fileId: fileRequest.Id,
+                                fileName: fileRequest.Name, isNewVersion: true);
                             this.PrintFile(uploadedFile, json);
                         }
                         catch (Exception e)
@@ -310,6 +330,7 @@ namespace BoxCLI.Commands
                 {
                     Reporter.WriteInformation($"File name: {fileName}");
                 }
+
                 BoxFileUploadSession boxFileUploadSession;
                 if (isNewVersion)
                 {
@@ -326,8 +347,10 @@ namespace BoxCLI.Commands
                         FileName = fileName,
                         FileSize = fileSize
                     };
-                    boxFileUploadSession = await boxClient.FilesManager.CreateUploadSessionAsync(boxFileUploadSessionRequest);
+                    boxFileUploadSession =
+                        await boxClient.FilesManager.CreateUploadSessionAsync(boxFileUploadSessionRequest);
                 }
+
                 var completeFileSha = await Task.Run(() =>
                 {
                     return Box.V2.Utility.Helper.GetSha1Hash(fileInMemoryStream);
@@ -336,38 +359,50 @@ namespace BoxCLI.Commands
                 var uploadPartUri = new Uri(boxSessionEndpoint.UploadPart);
                 var commitUri = new Uri(boxSessionEndpoint.Commit);
                 var partSize = boxFileUploadSession.PartSize;
-                long partSizeLong;
-                long.TryParse(partSize, out partSizeLong);
+                long.TryParse(partSize, out var partSizeLong);
                 var numberOfParts = this.GetUploadPartsCount(fileSize, partSizeLong);
                 if (!idOnly)
                 {
                     Reporter.WriteInformation($"Processing {fileName}");
                     ProgressBar.UpdateProgress($"Processing ", 0, numberOfParts);
                 }
-                var boxSessionParts = await UploadPartsInSessionAsync(uploadPartUri, numberOfParts, partSizeLong,
-                                                      fileInMemoryStream, client: boxClient, fileSize: fileSize, idOnly: idOnly);
 
-                BoxSessionParts sessionPartsForCommit = new BoxSessionParts() { Parts = boxSessionParts };
-                
+                var boxSessionParts = await UploadPartsInSessionAsync(uploadPartUri, numberOfParts, partSizeLong,
+                    fileInMemoryStream, client: boxClient, fileSize: fileSize, idOnly: idOnly);
+
+                var sessionPartsForCommit = new BoxSessionParts() {Parts = boxSessionParts};
+
                 if (!idOnly)
                 {
                     Reporter.WriteInformation("");
                     Reporter.WriteInformation("Attempting to commit...");
                 }
-                // const int retryCount = 5;
-                // var retryInterval = boxSessionParts.Count() * 100;
+
+                var retryCount = boxSessionParts.Count();
+                var retryInterval = boxSessionParts.Count() * 100;
 
                 // Commit
 
                 if (!string.IsNullOrEmpty(fileId))
                 {
-                    var commitResponse = await boxClient.FilesManager.CommitFileVersionSessionAsync(commitUri, completeFileSha, sessionPartsForCommit);
-                    Console.WriteLine(commitResponse.ToString());
-                    return commitResponse;
+                    return await Retry.ExecuteAsync<BoxFile>(
+                        (Func<Task<BoxFile>>) (async () =>
+                            await boxClient.FilesManager.CommitSessionAsync(commitUri, completeFileSha,
+                                sessionPartsForCommit)), TimeSpan.FromMilliseconds((double) retryInterval), retryCount,
+                        (Func<Exception, Task>) null, (Func<Exception, Task>) null, Array.Empty<Type>());
+                    // return await boxClient.FilesManager.CommitFileVersionSessionAsync(commitUri, completeFileSha,
+                    //    sessionPartsForCommit);
                 }
                 else
                 {
-                    return await boxClient.FilesManager.CommitSessionAsync(commitUri, completeFileSha, sessionPartsForCommit);
+                    return await Retry.ExecuteAsync<BoxFile>(
+                        (Func<Task<BoxFile>>) (async () =>
+                            await boxClient.FilesManager.CommitSessionAsync(commitUri, completeFileSha,
+                                sessionPartsForCommit)), TimeSpan.FromMilliseconds((double) retryInterval), retryCount,
+                        (Func<Exception, Task>) null, (Func<Exception, Task>) null, Array.Empty<Type>());
+
+                    // return await boxClient.FilesManager.CommitSessionAsync(commitUri, completeFileSha,
+                    //    sessionPartsForCommit);
                 }
             }
         }
@@ -382,6 +417,7 @@ namespace BoxCLI.Commands
                 numberOfParts = Convert.ToInt32(totalSize / partSize);
                 numberOfParts += 1;
             }
+
             return numberOfParts;
         }
 
@@ -449,7 +485,7 @@ namespace BoxCLI.Commands
                     {
                         // Release the memory when done
                         using (var partFileStream = this.GetFilePart(stream, partSize,
-                                    partOffset))
+                            partOffset))
                         {
                             var sha = Box.V2.Utility.Helper.GetSha1Hash(partFileStream);
                             partFileStream.Position = 0;
@@ -496,11 +532,13 @@ namespace BoxCLI.Commands
                 Reporter.WriteError(e.Message);
             }
         }
+
         protected async Task ProcessFolderBulkDownload(string path, string asUser = "", string fileName = "")
         {
             try
             {
-                var boxClient = base.ConfigureBoxClient(oneCallAsUserId: this._asUser.Value(), oneCallWithToken: base._oneUseToken.Value());
+                var boxClient = base.ConfigureBoxClient(oneCallAsUserId: this._asUser.Value(),
+                    oneCallWithToken: base._oneUseToken.Value());
                 path = GeneralUtilities.TranslatePath(path);
                 var idsList = this.ReadFileForIds(path);
                 var fileList = new List<BoxBulkDownload>();
@@ -514,9 +552,9 @@ namespace BoxCLI.Commands
                         {
                             Id = file.Id
                         });
-
                     }
                 }
+
                 await BulkDownload(fileList, fileName);
             }
             catch (Exception e)
@@ -524,9 +562,11 @@ namespace BoxCLI.Commands
                 Reporter.WriteError(e.Message);
             }
         }
+
         protected async Task BulkDownload(List<BoxBulkDownload> files, string fileName = "")
         {
-            var boxClient = base.ConfigureBoxClient(oneCallAsUserId: this._asUser.Value(), oneCallWithToken: base._oneUseToken.Value());
+            var boxClient = base.ConfigureBoxClient(oneCallAsUserId: this._asUser.Value(),
+                oneCallWithToken: base._oneUseToken.Value());
             using (var archive = ZipArchive.Create())
             {
                 Reporter.WriteInformation("Created zip archive...");
@@ -534,7 +574,9 @@ namespace BoxCLI.Commands
                 {
                     var fileInfo = await boxClient.FilesManager.GetInformationAsync(file.Id);
                     Reporter.WriteInformation($"Downloading {fileInfo.Name}...");
-                    using (Stream stream = (!string.IsNullOrEmpty(file.VersionId)) ? await boxClient.FilesManager.DownloadStreamAsync(file.Id, file.VersionId) : await boxClient.FilesManager.DownloadStreamAsync(file.Id))
+                    using (Stream stream = (!string.IsNullOrEmpty(file.VersionId))
+                        ? await boxClient.FilesManager.DownloadStreamAsync(file.Id, file.VersionId)
+                        : await boxClient.FilesManager.DownloadStreamAsync(file.Id))
                     {
                         Reporter.WriteInformation("About to add entry...");
                         try
@@ -552,12 +594,14 @@ namespace BoxCLI.Commands
                             Reporter.WriteError(e.StackTrace);
                         }
                     }
-
                 }
+
                 if (string.IsNullOrEmpty(fileName))
                 {
-                    fileName = $"{base._names.CommandNames.Files}-{base._names.SubCommandNames.Download}-{DateTime.Now.ToString(GeneralUtilities.GetDateFormatString())}";
+                    fileName =
+                        $"{base._names.CommandNames.Files}-{base._names.SubCommandNames.Download}-{DateTime.Now.ToString(GeneralUtilities.GetDateFormatString())}";
                 }
+
                 Reporter.WriteInformation("Processed files..");
                 var downloadPath = base.ConstructDownloadsPath(fileName);
                 Reporter.WriteInformation($"Saving to ${downloadPath}");
