@@ -19,7 +19,7 @@ namespace BoxCLI.Commands.CollaborationSubCommands
     {
         protected CommandOption _asUser;
         protected readonly BoxType _t;
-        protected static readonly List<string> _fields = _fields = new List<string>()
+        protected static readonly List<string> _fields = new List<string>
         {
             "status",
             "accessible_by",
